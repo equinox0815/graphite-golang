@@ -11,8 +11,7 @@ import (
 // Graphite is a struct that defines the relevant properties of a graphite
 // connection
 type Graphite struct {
-	Host    string
-	Port    int
+	Address string
 	Timeout time.Duration
 	Prefix	string
 	conn    net.Conn
@@ -39,13 +38,11 @@ func (graphite *Graphite) Connect() error {
 			graphite.conn.Close()
 		}
 
-		address := fmt.Sprintf("%s:%d", graphite.Host, graphite.Port)
-
 		if graphite.Timeout == 0 {
 			graphite.Timeout = defaultTimeout * time.Second
 		}
 
-		conn, err := net.DialTimeout("tcp", address, graphite.Timeout)
+		conn, err := net.DialTimeout("tcp", graphite.Address, graphite.Timeout)
 		if err != nil {
 			return err
 		}
@@ -127,7 +124,9 @@ func (graphite *Graphite) SimpleSend(stat string, value string) error {
 // NewGraphiteHost is a factory method that's used to create a new Graphite
 // connection given a hostname and a port number
 func NewGraphite(host string, port int) (*Graphite, error) {
-	Graphite := &Graphite{Host: host, Port: port}
+	address := fmt.Sprintf("%s:%d", host, port)
+
+	Graphite := &Graphite{Address: address}
 	err := Graphite.Connect()
 	if err != nil {
 		return nil, err
@@ -141,6 +140,8 @@ func NewGraphite(host string, port int) (*Graphite, error) {
 // log. This is useful if you want to use Graphite in a project but don't want
 // to make Graphite a requirement for the project.
 func NewGraphiteNop(host string, port int) *Graphite {
-	graphiteNop := &Graphite{Host: host, Port: port, nop: true}
+	address := fmt.Sprintf("%s:%d", host, port)
+
+	graphiteNop := &Graphite{Address: address, nop: true}
 	return graphiteNop
 }
