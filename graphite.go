@@ -13,7 +13,7 @@ import (
 type Graphite struct {
 	Address string
 	Timeout time.Duration
-	Prefix	string
+	Prefix  string
 	conn    net.Conn
 	nop     bool
 }
@@ -135,6 +135,18 @@ func NewGraphite(host string, port int) (*Graphite, error) {
 	return Graphite, nil
 }
 
+// NewGraphiteHost is a factory method that's used to create a new Graphite
+// connection given an address string understood by net.Dial
+func NewGraphiteFromAddress(address string) (*Graphite, error) {
+	Graphite := &Graphite{Address: address}
+	err := Graphite.Connect()
+	if err != nil {
+		return nil, err
+	}
+
+	return Graphite, nil
+}
+
 // NewGraphiteNop is a factory method that returns a Graphite struct but will
 // not actually try to send any packets to a remote host and, instead, will just
 // log. This is useful if you want to use Graphite in a project but don't want
@@ -142,6 +154,15 @@ func NewGraphite(host string, port int) (*Graphite, error) {
 func NewGraphiteNop(host string, port int) *Graphite {
 	address := fmt.Sprintf("%s:%d", host, port)
 
+	graphiteNop := &Graphite{Address: address, nop: true}
+	return graphiteNop
+}
+
+// NewGraphiteNop is a factory method that returns a Graphite struct but will
+// not actually try to send any packets to a remote host and, instead, will just
+// log. This is useful if you want to use Graphite in a project but don't want
+// to make Graphite a requirement for the project.
+func NewGraphiteNopFromAdress(address string) *Graphite {
 	graphiteNop := &Graphite{Address: address, nop: true}
 	return graphiteNop
 }
